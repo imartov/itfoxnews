@@ -40,4 +40,4 @@ class User(auth_user.AbstractUser):
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.title
+        return self.username
