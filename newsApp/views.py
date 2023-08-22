@@ -11,7 +11,9 @@ from .serializers import *
 from .permissions import *
 from .pagination import *
 
-class NewsPostAPIList(generics.ListAPIView):
+class NewsPostAPIList(mixins.ListModelMixin,
+                      mixins.RetrieveModelMixin,
+                      GenericViewSet):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
     pagination_class = AllNewsPostPagination
