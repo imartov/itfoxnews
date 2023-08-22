@@ -9,10 +9,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
 from .serializers import *
 from .permissions import *
+from .pagination import *
 
 class NewsPostAPIList(generics.ListAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
+    pagination_class = AllNewsPostPagination
     # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
