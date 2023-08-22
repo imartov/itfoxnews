@@ -22,10 +22,17 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('newsApp.urls')),
+
+    # base auth
     path('api/baseauth/', include('rest_framework.urls')),
     # http://127.0.0.1:8000/api/baseauth/login/ - base authentification
     
@@ -33,10 +40,16 @@ urlpatterns = [
     # http://127.0.0.1:8000/api/auth/
     # http://127.0.0.1:8000/api/auth/users/ - create new user 
     # http://127.0.0.1:8000/api/auth/users/activation/ - activation user
-    # detail - https://djoser.readthedocs.io/en/latest/base_endpoints.html#user-create
+    # more - https://djoser.readthedocs.io/en/latest/base_endpoints.html#user-create
 
+    # token auth
     re_path(r'^api/auth/', include('djoser.urls.authtoken')),
     # http://127.0.0.1:8000/api/auth/token/login/ - get token
+
+    # Json Web Token auth
+    path('api/jwtoken/', TokenObtainPairView.as_view(), name='token_obtain_pair'), # http://127.0.0.1:8000/api/jwttoken/
+    path('api/jwtoken/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/jwtoken/verify/', TokenVerifyView.as_view(), name='token_verify')
 ]
 
 if settings.DEBUG:

@@ -4,6 +4,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.authentication import (TokenAuthentication,
                                            SessionAuthentication,
                                            BasicAuthentication)
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import *
 from .serializers import *
@@ -13,14 +14,14 @@ class NewsPostAPIList(generics.ListAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
     # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
-    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
 
 class NewsPostCrateAPIView(generics.CreateAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostCreateSerializer
     permission_classes = (IsAuthenticatedOrAdmin, )
-    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
 
 class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
@@ -29,7 +30,7 @@ class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostUpdateSerializer
     permission_classes = (IsOwnerOrAdmin, )
-    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
 
 class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
@@ -38,7 +39,7 @@ class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
     permission_classes = (IsOwnerOrAdmin, )
-    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
 
 
