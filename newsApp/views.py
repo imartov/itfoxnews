@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets, mixins, permissions
+from rest_framework import generics, mixins, permissions
 from rest_framework.viewsets import GenericViewSet
-
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.authentication import (TokenAuthentication,
+                                           SessionAuthentication,
+                                           BasicAuthentication)
 
 from .models import *
 from .serializers import *
@@ -12,12 +12,15 @@ from .permissions import *
 class NewsPostAPIList(generics.ListAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
+    # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
 
 
 class NewsPostCrateAPIView(generics.CreateAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostCreateSerializer
     permission_classes = (IsAuthenticatedOrAdmin, )
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
 
 
 class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
@@ -26,6 +29,7 @@ class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostUpdateSerializer
     permission_classes = (IsOwnerOrAdmin, )
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
 
 
 class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
@@ -34,6 +38,7 @@ class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostDisplaySerializer
     permission_classes = (IsOwnerOrAdmin, )
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication) # exclude excess
 
 
 

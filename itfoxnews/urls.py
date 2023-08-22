@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt.views import (
@@ -26,8 +26,17 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('newsApp.urls')),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/baseauth/', include('rest_framework.urls')),
+    # http://127.0.0.1:8000/api/baseauth/login/ - base authentification
+    
+    path('api/auth/', include('djoser.urls')),
+    # http://127.0.0.1:8000/api/auth/
+    # http://127.0.0.1:8000/api/auth/users/ - create new user 
+    # http://127.0.0.1:8000/api/auth/users/activation/ - activation user
+    # detail - https://djoser.readthedocs.io/en/latest/base_endpoints.html#user-create
+
+    re_path(r'^api/auth/', include('djoser.urls.authtoken')),
+    # http://127.0.0.1:8000/api/auth/token/login/ - get token
 ]
 
 if settings.DEBUG:
