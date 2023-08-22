@@ -1,21 +1,55 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from rest_framework import generics, viewsets, mixins, permissions
+from rest_framework.viewsets import GenericViewSet
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import *
-from .serializers import NewsPostSerializer
+from .serializers import *
+from .permissions import *
 
-
-class NewsPostsApiList(generics.ListCreateAPIView):
+class NewsPostAPIList(generics.ListAPIView):
     queryset = NewsPost.objects.all()
-    serializer_class = NewsPostSerializer
+    serializer_class = NewsPostDisplaySerializer
 
 
-class NewPostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+class NewsPostCrateAPIView(generics.CreateAPIView):
     queryset = NewsPost.objects.all()
-    serializer_class = NewsPostSerializer
+    serializer_class = NewsPostCreateSerializer
+    permission_classes = (IsAuthenticatedOrAdmin, )
+
+
+class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
+                            mixins.UpdateModelMixin,
+                            GenericViewSet):
+    queryset = NewsPost.objects.all()
+    serializer_class = NewsPostUpdateSerializer
+    permission_classes = (IsOwnerOrAdmin, )
+
+
+class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
+                            mixins.DestroyModelMixin,
+                            GenericViewSet):
+    queryset = NewsPost.objects.all()
+    serializer_class = NewsPostDisplaySerializer
+    permission_classes = (IsOwnerOrAdmin, )
+
+
+
+# class NewsPostViewSet(viewsets.ModelViewSet):
+#     queryset = NewsPost.objects.all()
+#     serializer_class = NewsPostSerializer
+
+
+# class NewsPostsApiList(generics.ListCreateAPIView):
+#     queryset = NewsPost.objects.all()
+#     serializer_class = NewsPostSerializer
+
+
+# class NewPostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = NewsPost.objects.all()
+#     serializer_class = NewsPostSerializer
 
 
 # class NewsPostsView(APIView):

@@ -1,12 +1,19 @@
-from django.urls import path
+from django.urls import include, path
 from .views import *
+from rest_framework import routers
 
 
 app_name="newsApp"
 
 urlpatterns=[
-    path('newsposts/', NewsPostsApiList.as_view()), # list of all news
-    path('newsposts/<int:pk>/', NewPostRetrieveUpdateDestroyAPIView.as_view())
+    path('newsposts/', NewsPostAPIList.as_view()), # get all news http://127.0.0.1:8000/api/newsposts/
+    path('newsposts/create/', NewsPostCrateAPIView.as_view()), # create news http://127.0.0.1:8000/api/newsposts/create/
+    path('newsposts/update/<int:pk>/', NewsPostUpdateAPIView.as_view({"get": "retrieve", "put": "update"})), # update news http://127.0.0.1:8000/api/newsposts/update/
+    path('newsposts/delete/<int:pk>/', NewsPostDeleteAPIView.as_view({"get": "retrieve", "delete": "destroy"})), # create news http://127.0.0.1:8000/api/newsposts/delete/
+
+    
+    # path('newsposts/', NewsPostsApiList.as_view()), # list of all news
+    # path('newsposts/<int:pk>/', NewPostRetrieveUpdateDestroyAPIView.as_view())
     # path('newsposts/<int:pk>/', NewsPostDetailView.as_view()), # update news post
 #    path('gettoken/', NewsPostsView.as_view()), # get token for user
 #    path('updatenews/', NewsPostsView.as_view()), # update news
