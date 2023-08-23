@@ -11,3 +11,12 @@ class NewsPost(models.Model):
     
     def __str__(self):
         return f"{ self.author } - { self.title }"
+    
+
+# class Comment(models.Model):
+#     date_create = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Created date")
+#     text = models.TextField(blank=False, verbose_name="Text")
+#     author = models.ForeignKey(User, on_delete=models.DO_NOTHING, verbose_name="Author", related_name="comments")
+
+#     def __str__(self):
+#         return self.text[:10]

@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, mixins, permissions
+from rest_framework.response import Response
+from rest_framework import generics, mixins, permissions, status
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.authentication import (TokenAuthentication,
                                            SessionAuthentication,
@@ -11,28 +12,62 @@ from .serializers import *
 from .permissions import *
 from .pagination import *
 
-class NewsPostAPIList(mixins.ListModelMixin,
-                      mixins.RetrieveModelMixin,
-                      GenericViewSet):
-    queryset = NewsPost.objects.all()
-    serializer_class = NewsPostDisplaySerializer
-    pagination_class = AllNewsPostPagination
-    # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
-    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
-
-class NewsPostCrateAPIView(generics.CreateAPIView):
+class NewsPostListCreateView(generics.ListCreateAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostCreateSerializer
-    permission_classes = (IsAuthenticatedOrAdmin, )
+    pagination_class = AllNewsPostPagination
+    permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
+
+    def create(self, request, *args, **kwargs):
+        serializer = NewsPostCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=self.request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+
+class NewsPostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = NewsPost.objects.all()
+    serializer_class = NewsPostCreateSerializer
+    liikup_field = 'id' # slug
+    permission_classes = (IsOwnerOrAdmin, )
+    # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        if instance:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'Message': 'No News Post Found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# class NewsPostAPIList(mixins.ListModelMixin,
+#                       mixins.RetrieveModelMixin,
+#                       GenericViewSet):
+#     queryset = NewsPost.objects.all()
+#     serializer_class = NewsPostCreateSerializer
+#     # serializer_class = NewsPostDisplaySerializer
+#     pagination_class = AllNewsPostPagination
+#     # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
+#     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
+
+
+# class NewsPostCrateAPIView(generics.CreateAPIView):
+#     queryset = NewsPost.objects.all()
+#     serializer_class = NewsPostCreateSerializer
+#     # serializer_class = NewsPostCreateSerializer
+#     permission_classes = (IsAuthenticatedOrAdmin, )
+#     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
 
 class NewsPostUpdateAPIView(mixins.RetrieveModelMixin,
                             mixins.UpdateModelMixin,
                             GenericViewSet):
     queryset = NewsPost.objects.all()
-    serializer_class = NewsPostUpdateSerializer
+    serializer_class = NewsPostSerializer
     permission_classes = (IsOwnerOrAdmin, )
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
@@ -41,56 +76,6 @@ class NewsPostDeleteAPIView(mixins.RetrieveModelMixin,
                             mixins.DestroyModelMixin,
                             GenericViewSet):
     queryset = NewsPost.objects.all()
-    serializer_class = NewsPostDisplaySerializer
+    serializer_class = NewsPostSerializer
     permission_classes = (IsOwnerOrAdmin, )
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
-
-
-
-# class NewsPostViewSet(viewsets.ModelViewSet):
-#     queryset = NewsPost.objects.all()
-#     serializer_class = NewsPostSerializer
-
-
-# class NewsPostsApiList(generics.ListCreateAPIView):
-#     queryset = NewsPost.objects.all()
-#     serializer_class = NewsPostSerializer
-
-
-# class NewPostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = NewsPost.objects.all()
-#     serializer_class = NewsPostSerializer
-
-
-# class NewsPostsView(APIView):
-#     def get (self, request):
-#         newsposts = NewsPost.objects.all()
-#         serializer = NewsPostSerializer(newsposts, many=True)
-#         return Response({"newsposts": serializer.data})
-   
-#     def post(self, request):
-#         newspost = request.data.get('newspost')
-#         serializer = NewsPostSerializer(data=newspost)
-#         if serializer.is_valid(raise_exception=True):
-#             saved_newspost = serializer.save()
-#         return Response({"success": "News post '{}' created successfully".format(saved_newspost.title)})
-
-
-# class NewsPostDetailView(APIView):
-#     def get (self, request, pk):
-#         newspost = get_object_or_404(NewsPost.objects.all(), pk=pk)
-#         serializer = NewsPostSerializer(newspost, many=False)
-#         return Response({"newspost": serializer.data})
-
-#     def put(self, request, pk):
-#         saved_newspost = get_object_or_404(NewsPost.objects.all(), pk=pk)
-#         serializer = NewsPostSerializer(instance=saved_newspost, data=request.data, partial=True)
-#         if serializer.is_valid(raise_exception=True):
-#             newspost_saved = serializer.save()
-#         return Response({"success": "News post '{}' updated successfully".format(newspost_saved.title)})
-    
-#     def delete(self, request, pk):
-#         newspost = get_object_or_404(NewsPost.objects.all(), pk=pk)
-#         newspost_title = newspost.title
-#         newspost.delete()
-#         return Response({"message": "News post with title `{}` has been deleted.".format(newspost_title)},status=204)
