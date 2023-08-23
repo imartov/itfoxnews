@@ -34,12 +34,12 @@ urlpatterns = [
 
     # base auth
     path('api/baseauth/', include('rest_framework.urls')),
-    # http://127.0.0.1:8000/api/baseauth/login/ - base authentification
+    # http://127.0.0.1:8000/api/baseauth/login/ - base log in
     
-    path('api/auth/', include('djoser.urls')),
-    # http://127.0.0.1:8000/api/auth/
-    # http://127.0.0.1:8000/api/auth/users/ - create new user 
-    # http://127.0.0.1:8000/api/auth/users/activation/ - activation user
+    path('api/djoserauth/', include('djoser.urls')),
+    # http://127.0.0.1:8000/api/djoserauth/
+    # http://127.0.0.1:8000/api/djoserauth/users/ - create new user 
+    # http://127.0.0.1:8000/api/djoserauth/users/activation/ - activation user
     # more - https://djoser.readthedocs.io/en/latest/base_endpoints.html#user-create
 
     # token auth
