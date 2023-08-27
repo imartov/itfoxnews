@@ -6,32 +6,24 @@ from .models import *
 class CommentSerializer(serializers.ModelSerializer):
     newspost = serializers.StringRelatedField(read_only=True)
     author = serializers.ReadOnlyField(source='author.username')
-    # detail_link = serializers.SerializerMethodField()
     class Meta:
         model = Comment
         fields = "__all__"
 
-    # def get_detail_link(self, obj):
-    #     request = self.context.get('request')
-    #     return request.build_absolute_uri(reverse('newsApp:newspost_comment_detail',
-    #                                             kwargs={'newspost_id': obj.newspost_id,
-    #                                             "comment_id": obj.id}))
-
 
 class LikeSerializer(serializers.ModelSerializer):
-    newspost = serializers.StringRelatedField(read_only=True)
     user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Like
-        fields = '__all__'
-        read_only_fields = ['id', 'newspost']
+        fields = ('user', )
 
 
 class NewsPostSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
     likes_count = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
+    
     class Meta:
         model = NewsPost
         fields = "__all__"   
