@@ -18,9 +18,20 @@ class CommentSerializer(serializers.ModelSerializer):
     #                                             "comment_id": obj.id}))
 
 
+class LikeSerializer(serializers.ModelSerializer):
+    newspost = serializers.StringRelatedField(read_only=True)
+    user = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = Like
+        fields = '__all__'
+        read_only_fields = ['id', 'newspost']
+
+
 class NewsPostSerializer(serializers.ModelSerializer):
-    comments = serializers.SerializerMethodField()
     author = serializers.StringRelatedField(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
     class Meta:
         model = NewsPost
         fields = "__all__"   
@@ -30,7 +41,10 @@ class NewsPostSerializer(serializers.ModelSerializer):
         comments_count = Comment.objects.filter(newspost=obj).count()
         request = self.context.get('request')
         return {
+            "comments_count": comments_count,
             "comments": CommentSerializer(comments, many=True).data,
-            "all_comment_link": request.build_absolute_uri(reverse('newsApp:newspost_comment_list', kwargs={'newspost_id': obj.id})),
-            "comments_count": comments_count
+            "all_comment_link": request.build_absolute_uri(reverse('newsApp:newspost_comment_list', kwargs={'newspost_id': obj.id}))
         }
+    
+    def get_likes_count(self, obj):
+        return Like.objects.filter(newspost=obj).count()

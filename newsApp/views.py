@@ -108,3 +108,20 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
         if comment.author != request.user or comment.author.is_staff != request.user.is_staff:
             raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
         return super().put(request, *args, **kwargs)
+    
+
+class LikeListCreateView(generics.ListCreateAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def perform_create(self, serializer):
+        newspost_id = self.kwargs.get('newspost_id')
+        newspost = get_object_or_404(NewsPost, id=newspost_id)
+        if not self.request.user.is_authenticated:
+            raise serializers.ValidationError({"Message": "You must be logged to like this news post"})
+        serializer.save(user=self.request.user, newspost=newspost)
+
+
+class LikeDeleteView(generics.DestroyAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer

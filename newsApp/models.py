@@ -10,7 +10,13 @@ class NewsPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.DO_NOTHING, verbose_name="Author", related_name="newsposts")
     
     def __str__(self):
-        return f"{ self.author } - { self.title }"
+        return f"{self.title}... © {self.author}"
+
+    def num_likes(self):
+        return self.like_set.count()
+    
+    class Meta:
+        ordering = ('-date_create', )
     
 
 class Comment(models.Model):
@@ -21,3 +27,11 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'{self.text[:10]} - {self.newspost}'
+    
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    newspost = models.ForeignKey(NewsPost, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'newspost')
