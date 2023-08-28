@@ -6,6 +6,8 @@ from rest_framework.authentication import (TokenAuthentication,
                                            SessionAuthentication,
                                            BasicAuthentication)
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 from .models import *
 from .serializers import *
@@ -17,15 +19,13 @@ class NewsPostListCreateView(generics.ListCreateAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostSerializer
     pagination_class = AllNewsPostPagination
-    # permission_classes = (permissions.IsAuthenticated, ) # if need only authenticated users
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
 
     def create(self, request, *args, **kwargs):
-        # TODO: проверка аутентификации check_object_permissions
         serializer = NewsPostSerializer(data=request.data, context={'request': request})
+        self.check_object_permissions(self.request, obj=None)
         if not request.user.is_authenticated:
-            raise serializers.ValidationError({"Message": "You must be logged in to leave a news post"})
-        serializer.is_valid(raise_exception=True)
+            raise serializers.ValidationError({"Message": "You must be logged in to post"})
         serializer.save(author=self.request.user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -35,7 +35,6 @@ class NewsPostDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = NewsPost.objects.all()
     serializer_class = NewsPostSerializer
     liikup_field = 'id' # slug
-    # permission_classes = (IsOwnerOrAdmin, )
     # authentication_classes = (BasicAuthentication, TokenAuthentication, SessionAuthentication, JWTAuthentication) # exclude excess
     
     def retrieve(self, request, *args, **kwargs):
@@ -49,16 +48,16 @@ class NewsPostDetailView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         newspost = self.get_object()
         if not request.user.is_authenticated:
-            raise serializers.ValidationError({"Message": "You must be logged in to delete this news post"})
-        if newspost.author.is_staff != request.user.is_staff:
+            raise serializers.ValidationError({"Message": "You must be logged in to delete post"})
+        if newspost.author != request.user and not request.user.is_staff:
             raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
         return super().delete(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         newspost = self.get_object()
         if not request.user.is_authenticated:
-            raise serializers.ValidationError({"Message": "You must be logged in to delete this news post"})
-        if newspost.author.is_staff != request.user.is_staff:
+            raise serializers.ValidationError({"Message": "You must be logged in to update post"})
+        if newspost.author != request.user and not request.user.is_staff:
             raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
         return super().put(request, *args, **kwargs)
         
@@ -66,7 +65,6 @@ class NewsPostDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CommentListCreateView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = (permissions.IsAuthenticated, )
     
     def get_queryset(self):
         newspost_id = self.kwargs.get('newspost_id')
@@ -75,17 +73,17 @@ class CommentListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         newspost_id = self.kwargs.get('newspost_id')
         newspost = get_object_or_404(NewsPost, id=newspost_id)
-        if Comment.objects.filter(newspost=newspost, author=self.request.user).exists():
-            raise serializers.ValidationError({'Message': 'You have already added comment on this news post'})
         if not self.request.user.is_authenticated:
             raise serializers.ValidationError({"Message": "You must be logged in to leave a comment"})
+        if Comment.objects.filter(newspost=newspost, author=self.request.user).exists():
+            raise serializers.ValidationError({'Message': 'You have already added comment on this news post'})
+        self.check_object_permissions(self.request, obj=None)
         serializer.save(author=self.request.user, newspost=newspost)
 
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = (IsOwnerOrAdmin, )
     
     def get_object(self):
         comment_id = self.kwargs.get('comment_id')
@@ -99,13 +97,17 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         comment = self.get_object()
         newspost = get_object_or_404(NewsPost, id=comment.newspost_id)
-        if newspost.author != request.user or comment.author.is_staff != request.user.is_staff:
+        if not self.request.user.is_authenticated:
+            raise serializers.ValidationError({"Message": "You must be logged in to delete comment"})
+        if comment.author != request.user and newspost.author != request.user and not request.user.is_staff:
             raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
         return super().delete(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         comment = self.get_object()
-        if comment.author != request.user or comment.author.is_staff != request.user.is_staff:
+        if not self.request.user.is_authenticated:
+            raise serializers.ValidationError({"Message": "You must be logged in to update comment"})
+        if comment.author != request.user:
             raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
         return super().put(request, *args, **kwargs)
     
@@ -118,10 +120,18 @@ class LikeListCreateView(generics.ListCreateAPIView):
         newspost_id = self.kwargs.get('newspost_id')
         newspost = get_object_or_404(NewsPost, id=newspost_id)
         if not self.request.user.is_authenticated:
-            raise serializers.ValidationError({"Message": "You must be logged to like this news post"})
+            raise serializers.ValidationError({"Message": "You must be logged in to like"})
         serializer.save(user=self.request.user, newspost=newspost)
 
 
 class LikeDeleteView(generics.DestroyAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
+
+    def delete(self, request, *args, **kwargs):
+        like = self.get_object()
+        if not self.request.user.is_authenticated:
+            raise serializers.ValidationError({"Message": "You must be logged in to delete like"})
+        if like.user != request.user:
+            raise serializers.ValidationError({"Message": "You are not authorized to perform this action"})
+        return super().delete(request, *args, **kwargs)

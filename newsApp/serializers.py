@@ -4,11 +4,11 @@ from .models import *
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    newspost = serializers.StringRelatedField(read_only=True)
+    # newspost = serializers.StringRelatedField(read_only=True)
     author = serializers.ReadOnlyField(source='author.username')
     class Meta:
         model = Comment
-        fields = "__all__"
+        fields = ('id', 'date_create', 'text', 'author')
 
 
 class LikeSerializer(serializers.ModelSerializer):
