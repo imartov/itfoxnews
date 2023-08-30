@@ -32,7 +32,6 @@ class UserManager(auth_user.BaseUserManager):
 class User(auth_user.AbstractUser):
     username = models.CharField(max_length=255, blank=True, verbose_name="Username", unique=True)
     password = models.CharField(max_length=255, blank=True, verbose_name="Password")
-    # TODO: зашифровать пароль
 
     objects = UserManager()
 

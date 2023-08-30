@@ -31,9 +31,10 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('newsApp.urls')),
+    path('api/basicauth/', include('userApp.urls')),
 
     # base auth
-    path('api/baseauth/', include('rest_framework.urls')),
+    path('api/rfauth/', include('rest_framework.urls')),
     # http://127.0.0.1:8000/api/baseauth/login/ - base log in
     
     path('api/djoserauth/', include('djoser.urls')),
