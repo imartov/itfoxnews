@@ -26,6 +26,7 @@ class NewsPostListCreateView(generics.ListCreateAPIView):
         self.check_object_permissions(self.request, obj=None)
         if not request.user.is_authenticated:
             raise serializers.ValidationError({"Message": "You must be logged in to post"})
+        serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

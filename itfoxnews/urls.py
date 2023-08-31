@@ -35,7 +35,7 @@ urlpatterns = [
 
     # base auth
     path('api/rfauth/', include('rest_framework.urls')),
-    # http://127.0.0.1:8000/api/baseauth/login/ - base log in
+    # http://127.0.0.1:8000/api/rfauth/login/ - base log in
     
     path('api/djoserauth/', include('djoser.urls')),
     # http://127.0.0.1:8000/api/djoserauth/
