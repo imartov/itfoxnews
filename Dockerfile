@@ -2,6 +2,7 @@ FROM python:3.11.0
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE=itfoxnews.settings
 
 RUN pip install --upgrade pip
 
@@ -12,3 +13,5 @@ WORKDIR /itfoxnewsproject
 ADD . /itfoxnewsproject/
 
 RUN pip install -r requirements.txt
+
+EXPOSE 8000
