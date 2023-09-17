@@ -1,19 +1,13 @@
-FROM python:3.11.0
+FROM python:3.9
 
-ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=itfoxnews.settings
 
-RUN pip install --upgrade pip
+WORKDIR /itfoxnewsdocker
 
-RUN mkdir /itfoxnewsproject
+COPY requirements.txt /itfoxnewsdocker/
+RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /itfoxnewsproject
+COPY . /itfoxnewsdocker/
 
-ADD . /itfoxnewsproject/
-
-RUN pip install -r requirements.txt
-
-EXPOSE 8000
-
-ENTRYPOINT ["/itfoxnewsproject/entrypoint.sh"]
+RUN apt-get update && apt-get install -y postgresql-client
